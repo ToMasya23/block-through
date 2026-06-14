@@ -1,66 +1,25 @@
-お返事撃退‼️ブロックするー😡
+graph TD
+    %% スタイル定義
+    classDef startEnd fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef process fill:#fff,stroke:#333,stroke-width:1px;
+    classDef condition fill:#ffd,stroke:#333,stroke-width:1px;
 
-迷惑なメッセージ（弾幕）を回避し、返信（攻撃）で撃退する、スマホUI風の弾幕シューティングゲームです。
-「既読スルー」や「ブロック」をゲームプレイとして表現しています。
-
-🎮 ゲーム概要
-
-ジャンル: 弾幕シューティング
-
-プラットフォーム: Webブラウザ（PC / スマートフォン両対応）
-
-技術スタック: HTML5, CSS3 (Tailwind CSS), JavaScript (Canvas API) - シングルファイル構成
-
-✨ 特徴
-
-スマホ風UI: LINEのようなトーク画面で展開されるバトル。
-
-個性的なステージ:
-
-Stage 1: おぢさん - 構文全開のメッセージ攻撃。
-
-Stage 2: オヂさんの大群 - 画面上部に居座る小オヂさんと雑魚敵の波状攻撃。
-
-Stage 3: 怒りの説教オヂ - 巨大化したボスによる高速説教弾幕。
-
-必殺技: 「BREAKTHROUGH（ブレイクスルー）」で画面上のメッセージを一掃！（1試合に1回のみ使用可能）
-
-🕹️ 操作方法
-
-PC（キーボード & マウス）
-
-移動: W A S D キー または 方向キー
-
-攻撃: Space キー（長押し）
-
-必殺技: Q キー
-
-※ マウスドラッグでの移動も可能です。
-
-スマートフォン（タッチ操作）
-
-移動: 画面をスワイプ（指に追従）
-
-攻撃: 自動発射（常時）
-
-必殺技: 画面右下のボタンをタップ、または指2本で同時タップ
-
-🚀 遊び方 / インストール
-
-特別なインストールは不要です。
-
-index.html ファイルをWebブラウザ（Chrome, Safari, Edgeなど）で開くだけで遊べます。
-
-Webサーバー（GitHub Pages, Netlifyなど）にアップロードすれば、スマホからURLでアクセスして遊ぶことができます。
-
-🛠️ カスタマイズ
-
-index.html 内の JavaScript クラス GameApp を編集することで、ゲームバランスやテキストを調整できます。
-
-敵のセリフ変更: update() メソッド内の texts 配列を編集してください。
-
-難易度調整: spawnRate や敵の hp（体力）の数値を変更してください。
-
-📜 ライセンス
-
-このプロジェクトは MIT License の下で公開されています。
+    %% 各ステップ
+    ST((1. START)):::startEnd --> S2[2. システム初期化<br>・INIT 0040H 呼び出し<br>・MODE 005BH 呼び出し]:::process
+    S2 --> S3[3. レジスタ初期設定<br>・BC ← 除数<br>・HL ← 被除数<br>・DE ← 0000H 商カウンタ]:::process
+    
+    %% ループ構造
+    S3 --> S4[4. ループ先頭 DIV_LP<br>・AND A によるキャリークリア]:::process
+    S4 --> S5[5. 減算の実行<br>・SBC HL, BC 被除数－除数]:::process
+    S5 --> S6{6. 判定分岐<br>キャリーフラグ C}:::condition
+    
+    %% 分岐
+    S6 -- "C = 0 (引けた)" --> S7[7. 商の更新と反復<br>・INC DE 商+1<br>・JP DIV_LP]:::process
+    S7 --> S4
+    
+    S6 -- "C = 1 (引けない)" --> S8[8. 補正 END_LP<br>・ADD HL, BC 足し戻し]:::process
+    
+    %% 後処理から終了
+    S8 --> S9[9. 結果の格納<br>・商を 87C3H へ転送<br>・余りを 87C5H へ転送]:::process
+    S9 --> S10[10. LED表示<br>・CALL DISP 0053H]:::process
+    S10 --> ED((11. 終了<br>・RET 命令)):::startEnd
